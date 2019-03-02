@@ -4,13 +4,12 @@ const express = require('express')();
 const mapquest_key = process.env.MAPQUEST_KEY;
 const mapquest_secret = process.env.MAPQUEST_SECRET;
 const darksky_key = process.env.DARKSKY_KEY;
+const port = process.env.PORT;
+express.listen(port);
 
 express.get('/test', (req, res) => {
     res.send('Hola chica');
 })
-
-express.listen(3000);
-console.log("listening on port 3000");
 
 express.get('/api/:city', (req, res) => {
     let city = req.param('city');
