@@ -4,17 +4,14 @@ const express = require('express')();
 const mapquest_key = process.env.MAPQUEST_KEY;
 const mapquest_secret = process.env.MAPQUEST_SECRET;
 const darksky_key = process.env.DARKSKY_KEY;
-// const port = process.env.PORT;
-// express.listen(port);
-express.listen(3000);
-console.log('3000 active');
+const port = process.env.PORT;
+express.listen(port);
+// express.listen(3000);
+// console.log('3000 active');
 
-express.get('/test', (req, res) => {
-    res.send('Hola chica');
+express.get('/help', (req, res) => {
+    res.send('yelp');
 })
-
-// let city = 'stockholm';
-// reportWeatherFromCity(city)// , res)
 
 express.get('/', (req, res) => {
     let city = 'stockholm';
@@ -30,7 +27,6 @@ express.get('/api/currently/:city/:unit', (req, res) => {
         res.send('Forbidden: City cannot contain å ä ö');
     }
 })
-
 
 express.get('/api/forecast/:city/:unit', (req, res) => {
     let city = req.param('city');
