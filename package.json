@@ -1,10 +1,9 @@
 {
   "name": "weatherapi",
   "version": "1.0.0",
-  "description": "",
   "main": "src/app.js",
   "scripts": {
-    "start": "node src/app.js",
+    "start": "nodemon src/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -13,5 +12,15 @@
     "dotenv": "^6.2.0",
     "express": "^4.16.4",
     "node-fetch": "^2.3.0"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peterheinum/weatherbackend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/peterheinum/weatherbackend/issues"
+  },
+  "homepage": "https://github.com/peterheinum/weatherbackend#readme",
+  "description": ""
 }
