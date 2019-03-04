@@ -15,7 +15,7 @@ express.get('/help', (req, res) => {
 
 express.get('/', (req, res) => {
     let city = 'stockholm';
-    reportWeatherFromCity(city, res)
+    reportCurrentWeatherFromCity(city, res)
 })
 express.get('/api/currently/:city/:unit', (req, res) => {
     let city = req.param('city');
@@ -40,7 +40,6 @@ express.get('/api/raw/:city/:unit', (req, res) => {
     rawDataFromCity(city, res);
 })
 
-
 function rawDataFromCity(city, res){
     try {
         fetchLatAndLong(city).then(response => response.json()).then(latData => {
@@ -53,7 +52,6 @@ function rawDataFromCity(city, res){
         res.send(jsonError);
     }
 }
-
 
 function reportCurrentWeatherFromCity(city, res) {
     let weather;
