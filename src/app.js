@@ -1,10 +1,12 @@
 require('dotenv').config();
 const fetch = require('node-fetch');
 const express = require('express')();
+const cors = require('cors')
 const mapquest_key = process.env.MAPQUEST_KEY;
 const mapquest_secret = process.env.MAPQUEST_SECRET;
 const darksky_key = process.env.DARKSKY_KEY;
 const port = process.env.PORT;
+express.use(cors);
 express.listen(port);
 // express.listen(3000);
 // console.log('3000 active');
