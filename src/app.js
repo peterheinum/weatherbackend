@@ -20,8 +20,9 @@ express.get('/', (req, res) => {
     let city = 'stockholm';
     reportWeatherFromCity(city, res)
 })
-express.get('/api/currently/:city', (req, res) => {
-    let city = req.query('city');
+express.get('/api/currently/:city/:unit', (req, res) => {
+    let city = req.param('city');
+    let unit = req.param('unit');
     if (!checkIfStringContainsForbiddenSigns(city)) {
         reportCurrentWeatherFromCity(city, res)
     }
@@ -31,11 +32,31 @@ express.get('/api/currently/:city', (req, res) => {
 })
 
 
-express.get('/api/forecast/:city', (req, res) => {
+express.get('/api/forecast/:city/:unit', (req, res) => {
     let city = req.param('city');
+    let unit = req.param('unit');
     reportForecastFromCity(city, res);
 })
 
+express.get('/api/raw/:city/:unit', (req, res) => {
+    let city = req.param('city');
+    let unit = req.param('unit');
+    rawDataFromCity(city, res);
+})
+
+
+function rawDataFromCity(city, res){
+    try {
+        fetchLatAndLong(city).then(response => response.json()).then(latData => {
+            fetchWeather(getLatAndLngFromRes(latData)).then(response => response.json()).then(weatherData => {
+                res.send(weatherData);
+            });
+        });
+    } catch (error) {
+        let jsonError = JSON.stringify({ error: error.msg })
+        res.send(jsonError);
+    }
+}
 
 
 function reportCurrentWeatherFromCity(city, res) {
@@ -46,8 +67,6 @@ function reportCurrentWeatherFromCity(city, res) {
             fetchWeather(getLatAndLngFromRes(latData)).then(response => response.json()).then(weatherData => {
                 let sunsetTime = convertUnixToTime(weatherData.daily.data[0].sunsetTime);
                 let sunriseTime = convertUnixToTime(weatherData.daily.data[0].sunriseTime);
-                // console.log(sunriseTime + " sunrise")
-                // console.log(sunsetTime + " sunset")
                 weather = {
                     windSpeed: weatherData.currently.windSpeed,
                     summary: weatherData.currently.summary,
@@ -57,8 +76,6 @@ function reportCurrentWeatherFromCity(city, res) {
                     sunset: sunsetTime
                 }
                 res.send(JSON.stringify(weather))
-                currentweather = `${weatherData.currently.summary}, ${weatherData.currently.temperature}°C`;
-                //res.send(currentweather);
             });
         });
     } catch (error) {
@@ -74,7 +91,6 @@ function reportForecastFromCity(city, res) {
         fetchWeather(getLatAndLngFromRes(latData)).then(response => response.json()).then(weatherData => {
             let sunsetTime = convertUnixToTime(weatherData.daily.data[0].sunsetTime);
             let sunriseTime = convertUnixToTime(weatherData.daily.data[0].sunriseTime);
-            //console.log(weatherData.daily.data);
             let number = 0;
             weatherData.daily.data.forEach(e => {
                 let template = {
@@ -93,7 +109,6 @@ function reportForecastFromCity(city, res) {
                 report.push(template);
             });
             res.send(JSON.stringify(report));
-
         });
     });
 }
