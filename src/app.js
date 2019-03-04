@@ -17,9 +17,9 @@ express.get('/', (req, res) => {
     let city = 'stockholm';
     reportCurrentWeatherFromCity(city, res)
 })
-express.get('/api/currently/:city/:unit', (req, res) => {
+express.get('/api/currently/:city/', (req, res) => {
     let city = req.param('city');
-    let unit = req.param('unit');
+    // let unit = req.param('unit');
     if (!checkIfStringContainsForbiddenSigns(city)) {
         reportCurrentWeatherFromCity(city, res)
     }
@@ -28,15 +28,15 @@ express.get('/api/currently/:city/:unit', (req, res) => {
     }
 })
 
-express.get('/api/forecast/:city/:unit', (req, res) => {
+express.get('/api/forecast/:city/', (req, res) => {
     let city = req.param('city');
-    let unit = req.param('unit');
+    // let unit = req.param('unit');
     reportForecastFromCity(city, res);
 })
 
-express.get('/api/raw/:city/:unit', (req, res) => {
+express.get('/api/raw/:city/', (req, res) => {
     let city = req.param('city');
-    let unit = req.param('unit');
+    // let unit = req.param('unit');
     rawDataFromCity(city, res);
 })
 
