@@ -6,10 +6,10 @@ const mapquest_key = process.env.MAPQUEST_KEY;
 const mapquest_secret = process.env.MAPQUEST_SECRET;
 const darksky_key = process.env.DARKSKY_KEY;
 const port = process.env.PORT;
-express.use(cors);
+// express.use(cors);
 express.listen(port);
-// express.listen(3000);
-// console.log('3000 active');
+// express.listen(5000);
+console.log('5000 active');
 
 express.get('/help', (req, res) => {
     res.send('yelp');
@@ -20,24 +20,19 @@ express.get('/', (req, res) => {
     reportCurrentWeatherFromCity(city, res)
 })
 express.get('/api/currently/:city/', (req, res) => {
-    let city = req.param('city');
-    // let unit = req.param('unit');
-    if (!checkIfStringContainsForbiddenSigns(city)) {
-        reportCurrentWeatherFromCity(city, res)
-    }
-    else {
-        res.send('Forbidden: City cannot contain å ä ö');
-    }
+    let city = req.params.city;
+    reportCurrentWeatherFromCity(city, res)
 })
 
 express.get('/api/forecast/:city/', (req, res) => {
-    let city = req.param('city');
+    let city = req.params.city; 
+    console.log(req.params);
     // let unit = req.param('unit');
     reportForecastFromCity(city, res);
 })
 
 express.get('/api/raw/:city/', (req, res) => {
-    let city = req.param('city');
+    let city = req.params.city;
     // let unit = req.param('unit');
     rawDataFromCity(city, res);
 })
@@ -81,7 +76,6 @@ function reportCurrentWeatherFromCity(city, res) {
 }
 
 function reportForecastFromCity(city, res) {
-    console.log("hello");
     let report = [];
     fetchLatAndLong(city).then(response => response.json()).then(latData => {
         fetchWeather(getLatAndLngFromRes(latData)).then(response => response.json()).then(weatherData => {
