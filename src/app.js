@@ -6,7 +6,7 @@ const mapquest_key = process.env.MAPQUEST_KEY;
 const mapquest_secret = process.env.MAPQUEST_SECRET;
 const darksky_key = process.env.DARKSKY_KEY;
 const port = process.env.PORT;
-// express.use(cors);
+express.use(cors());
 express.listen(port);
 // express.listen(5000);
 console.log('5000 active');
