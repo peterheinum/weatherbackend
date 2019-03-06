@@ -7,40 +7,64 @@ const mapquest_secret = process.env.MAPQUEST_SECRET;
 const darksky_key = process.env.DARKSKY_KEY;
 const port = process.env.PORT;
 express.use(cors());
-express.listen(port);
-// express.listen(5000);
+express.listen(process.env.PORT || 5000);
+
 console.log('5000 active');
 
-express.get('/help', (req, res) => {
+express.get('/help/:city?/:unit?', (req, res) => {
+    if (req.params.unit != undefined) {
+        console.log(req.params.unit);
+    }
     res.send('yelp');
 })
 
 express.get('/', (req, res) => {
     let city = 'stockholm';
-    reportCurrentWeatherFromCity(city, res)
-})
-express.get('/api/currently/:city/', (req, res) => {
-    let city = req.params.city;
-    reportCurrentWeatherFromCity(city, res)
+    res.send("yup im online yo");
 })
 
-express.get('/api/forecast/:city/', (req, res) => {
-    let city = req.params.city; 
-    console.log(req.params);
-    // let unit = req.param('unit');
-    reportForecastFromCity(city, res);
+express.get('/:location?/:unit?/', (req, res) => {
+    let location = req.params.location;
+    let unit = checkIfUnitExists(req);
+    reportCurrentWeatherFromLocation(location, res, unit);
 })
 
-express.get('/api/raw/:city/', (req, res) => {
-    let city = req.params.city;
-    // let unit = req.param('unit');
-    rawDataFromCity(city, res);
+express.get('/api/currently/:location?/:unit?/', (req, res) => {
+    let location = req.params.location;
+    let unit = checkIfUnitExists(req);
+    reportCurrentWeatherFromLocation(location, res, unit)
 })
 
-function rawDataFromCity(city, res){
+express.get('/api/forecast/:location?/:unit?/', (req, res) => {
+    let location = req.params.location;
+    let unit = checkIfUnitExists(req);
+    reportForecastFromCity(location, res, unit);
+})
+
+express.get('/api/raw/:location?/:unit?', (req, res) => {
+    let location = req.params.location;
+    let unit = checkIfUnitExists(req);
+    rawDataFromCity(location, res, unit);
+})
+
+
+
+function fetchLatAndLong(city) {
+    return fetch(`http://www.mapquestapi.com/geocoding/v1/address?key=${mapquest_key}&location=${city}, SE`);
+}
+
+function fetchWeather(latlng, unit) {
+    if (unit == "none" || unit == undefined) return fetch(`https://api.darksky.net/forecast/${darksky_key}/${latlng}?lang=sv&units=si`);
+    if (unit != "none") {
+        return fetch(`https://api.darksky.net/forecast/${darksky_key}/${latlng}?lang=sv`);
+    }
+
+}
+
+function rawDataFromCity(city, res, unit) {
     try {
         fetchLatAndLong(city).then(response => response.json()).then(latData => {
-            fetchWeather(getLatAndLngFromRes(latData)).then(response => response.json()).then(weatherData => {
+            fetchWeather(getLatAndLngFromRes(latData), unit).then(response => response.json()).then(weatherData => {
                 res.send(weatherData);
             });
         });
@@ -50,12 +74,26 @@ function rawDataFromCity(city, res){
     }
 }
 
-function reportCurrentWeatherFromCity(city, res) {
+function reportCurrentWeatherFromLocation(location, res, unit) {
     let weather;
-    let currentweather;
-    try {
-        fetchLatAndLong(city).then(response => response.json()).then(latData => {
-            fetchWeather(getLatAndLngFromRes(latData)).then(response => response.json()).then(weatherData => {
+
+    if (location.split(',')[1] != undefined) {    //This will determine if the location we sent in is a latlng or city
+        fetchWeather(location, unit).then(response => response.json()).then(weatherData => {
+            let sunsetTime = convertUnixToTime(weatherData.daily.data[0].sunsetTime);
+            let sunriseTime = convertUnixToTime(weatherData.daily.data[0].sunriseTime);
+            weather = {
+                windSpeed: weatherData.currently.windSpeed,
+                summary: weatherData.currently.summary,
+                Temperature: weatherData.currently.temperature,
+                Humidity: weatherData.currently.humidity,
+                sunrise: sunriseTime,
+                sunset: sunsetTime
+            }
+            res.send(JSON.stringify(weather))
+        });
+    } else {
+        fetchLatAndLong(location).then(response => response.json()).then(latData => {
+            fetchWeather(getLatAndLngFromRes(latData, unit), unit).then(response => response.json()).then(weatherData => {
                 let sunsetTime = convertUnixToTime(weatherData.daily.data[0].sunsetTime);
                 let sunriseTime = convertUnixToTime(weatherData.daily.data[0].sunriseTime);
                 weather = {
@@ -69,9 +107,6 @@ function reportCurrentWeatherFromCity(city, res) {
                 res.send(JSON.stringify(weather))
             });
         });
-    } catch (error) {
-        let jsonError = JSON.stringify({ error: error.msg })
-        res.send(jsonError);
     }
 }
 
@@ -103,16 +138,7 @@ function reportForecastFromCity(city, res) {
     });
 }
 
-function checkIfStringContainsForbiddenSigns(string) {
-    let strArr = [...string];
-    strArr.forEach(letter => {
-        if (letter.toLowerCase() == 'å' || letter.toLowerCase() == 'ä' || letter.toLowerCase() == 'ö') {
-            return true;
-        }
-    });
-    return false;
-}
-
+// HELPERS ------------------------ HELPERS \\
 function getLatAndLngFromRes(res) {
     let latLng;
     res.results.forEach(element => {
@@ -123,17 +149,16 @@ function getLatAndLngFromRes(res) {
     return latLng;
 }
 
-function fetchLatAndLong(city) {
-    return fetch(`http://www.mapquestapi.com/geocoding/v1/address?key=${mapquest_key}&location=${city}, SE`);
-}
-
-function fetchWeather(latlng) {
-    return fetch(`https://api.darksky.net/forecast/${darksky_key}/${latlng}?lang=sv&units=si`);
-}
 
 function convertUnixToTime(unix_time) {
     let date = new Date(unix_time * 1000);
     let hours = date.getHours();
     let minutes = "0" + date.getMinutes();
     return hours + ':' + minutes.substr(-2);
+}
+
+function checkIfUnitExists(req) {
+    let unit = req.params.unit;
+    if (unit == undefined) unit = "none";
+    return unit;
 }
