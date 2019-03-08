@@ -5,7 +5,6 @@ const cors = require('cors')
 const mapquest_key = process.env.MAPQUEST_KEY;
 const mapquest_secret = process.env.MAPQUEST_SECRET;
 const darksky_key = process.env.DARKSKY_KEY;
-const port = process.env.PORT;
 express.use(cors());
 express.listen(process.env.PORT || 5000);
 
@@ -54,7 +53,7 @@ function fetchLatAndLong(city) {
 }
 
 function fetchWeather(latlng, unit) {
-    if (unit == "none" || unit == undefined) return fetch(`https://api.darksky.net/forecast/${darksky_key}/${latlng}?lang=sv&units=si`);
+    if (unit == "none" || unit == 'C' || unit == undefined) return fetch(`https://api.darksky.net/forecast/${darksky_key}/${latlng}?lang=sv&units=si`);
     if (unit != "none") {
         return fetch(`https://api.darksky.net/forecast/${darksky_key}/${latlng}?lang=sv`);
     }
