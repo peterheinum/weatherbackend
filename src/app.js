@@ -8,14 +8,7 @@ const darksky_key = process.env.DARKSKY_KEY;
 express.use(cors());
 express.listen(process.env.PORT || 5000);
 
-console.log('5000 active');
-
-express.get('/help/:city?/:unit?', (req, res) => {
-    if (req.params.unit != undefined) {
-        console.log(req.params.unit);
-    }
-    res.send('yelp');
-})
+console.log('API ACTIVATED');
 
 express.get('/', (req, res) => {
     let city = 'stockholm';
@@ -53,9 +46,9 @@ function fetchLatAndLong(city) {
 }
 
 function fetchWeather(latlng, unit) {
-    if (unit == "none" || unit == 'C' || unit == undefined) return fetch(`https://api.darksky.net/forecast/${darksky_key}/${latlng}?lang=sv&units=si`);
+    if (unit == "none" || unit == 'C' || unit == undefined) return fetch(`https://api.darksky.net/forecast/${darksky_key}/${latlng}?&units=si`);
     if (unit != "none") {
-        return fetch(`https://api.darksky.net/forecast/${darksky_key}/${latlng}?lang=sv`);
+        return fetch(`https://api.darksky.net/forecast/${darksky_key}/${latlng}`);
     }
 
 }
