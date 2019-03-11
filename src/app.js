@@ -75,7 +75,6 @@ function rawDataFromCity(city, res, unit) {
 
 function reportCurrentWeatherFromLocation(location, res, unit) {
     let weather;
-
     if (location.split(',')[1] != undefined) {    //This will determine if the location we sent in is a latlng or city
         fetchWeather(location, unit).then(response => response.json()).then(weatherData => {
             let sunsetTime = convertUnixToTime(weatherData.daily.data[0].sunsetTime);
@@ -86,7 +85,8 @@ function reportCurrentWeatherFromLocation(location, res, unit) {
                 Temperature: weatherData.currently.temperature,
                 Humidity: weatherData.currently.humidity,
                 sunrise: sunriseTime,
-                sunset: sunsetTime
+                sunset: sunsetTime,
+                icon: weatherData.currently.icon
             }
             res.send(JSON.stringify(weather))
         });
@@ -101,7 +101,8 @@ function reportCurrentWeatherFromLocation(location, res, unit) {
                     Temperature: weatherData.currently.temperature,
                     Humidity: weatherData.currently.humidity,
                     sunrise: sunriseTime,
-                    sunset: sunsetTime
+                    sunset: sunsetTime,
+                    icon: weatherData.currently.icon
                 }
                 res.send(JSON.stringify(weather))
             });
@@ -127,7 +128,8 @@ function reportForecastFromCity(city, res) {
                     apparentTemperatureMin: e.apparentTemperatureMin,
                     apparentTemperatureMax: e.apparentTemperatureMax,
                     sunrise: sunriseTime,
-                    sunset: sunsetTime
+                    sunset: sunsetTime,
+                    icon: e.icon
                 }
                 number++;
                 report.push(template);
