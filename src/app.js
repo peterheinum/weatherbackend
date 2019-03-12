@@ -30,7 +30,7 @@ express.get('/api/currently/:location?/:unit?/', (req, res) => {
 express.get('/api/forecast/:location?/:unit?/', (req, res) => {
     let location = req.params.location;
     let unit = checkIfUnitExists(req);
-    reportForecastFromCity(location, res, unit);
+    reportForecastFromLocation(location, res, unit);
 })
 
 express.get('/api/raw/:location?/:unit?', (req, res) => {
@@ -103,10 +103,10 @@ function reportCurrentWeatherFromLocation(location, res, unit) {
     }
 }
 
-function reportForecastFromCity(city, res) {
+function reportForecastFromLocation(city, res, unit) {
     let report = [];
     fetchLatAndLong(city).then(response => response.json()).then(latData => {
-        fetchWeather(getLatAndLngFromRes(latData)).then(response => response.json()).then(weatherData => {
+        fetchWeather(getLatAndLngFromRes(latData), unit).then(response => response.json()).then(weatherData => {
             let sunsetTime = convertUnixToTime(weatherData.daily.data[0].sunsetTime);
             let sunriseTime = convertUnixToTime(weatherData.daily.data[0].sunriseTime);
             let number = 0;
