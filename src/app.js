@@ -39,6 +39,12 @@ express.get('/api/raw/:location?/:unit?', (req, res) => {
     rawDataFromCity(location, res, unit);
 })
 
+express.get('/api/24h/:location?/:unit?', (req, res) => {
+    const location = req.params.location;
+    let unit = checkIfUnitExists(req);
+    getHourlyPrognosisFromLocation(location, res, unit);
+})
+
 
 
 function fetchLatAndLong(city) {
@@ -50,10 +56,58 @@ function fetchWeather(latlng, unit) {
     if (unit != "none") {
         return fetch(`https://api.darksky.net/forecast/${darksky_key}/${latlng}`);
     }
+}
+
+
+// getLatandLongFromLocation = (location) => {
+//     if (location.split(',')[1] !== undefined) {
+//         return location;
+//     } else {
+//         fetchLatAndLong(location).then(response => response.json()).then(latData => {
+//             return getLatAndLngFromRes(latData);
+//         })
+//     }
+// }
+
+getHourlyPrognosisFromLocation = (location, res, unit) => {
+    if (location.split(',')[1] !== undefined) {
+        fetchWeather(location, unit).then(response => response.json()).then(weatherData => {
+            let arr = [];
+            for (let i = 0; i < 25; i += 3) {
+                let weather = {
+                    time: convertUnixToTime(weatherData.hourly.data[i].time),
+                    summary: weatherData.hourly.data[i].summary,
+                    temperature: weatherData.hourly.data[i].temperature,
+                    apparentTemperature: weatherData.hourly.data[i].apparentTemperature,
+                    windSpeed: weatherData.hourly.data[i].windSpeed,
+                }
+                arr.push(weather);
+            }
+            res.send(JSON.stringify(arr));
+        });
+    }
+    else {
+        fetchLatAndLong(location).then(response => response.json()).then(latData => {
+            fetchWeather(getLatAndLngFromRes(latData), unit).then(response => response.json()).then(weatherData => {
+                let arr = [];
+                for (let i = 0; i < 25; i += 3) {
+                    let weather = {
+                        time: convertUnixToTime(weatherData.hourly.data[i].time),
+                        summary: weatherData.hourly.data[i].summary,
+                        temperature: weatherData.hourly.data[i].temperature,
+                        apparentTemperature: weatherData.hourly.data[i].apparentTemperature,
+                        windSpeed: weatherData.hourly.data[i].windSpeed,
+                    }
+                    arr.push(weather);
+                }
+                res.send(JSON.stringify(arr));
+            });
+        });
+    }
 
 }
 
-function rawDataFromCity(city, res, unit) {
+rawDataFromCity = (city, res, unit) => {
     try {
         fetchLatAndLong(city).then(response => response.json()).then(latData => {
             fetchWeather(getLatAndLngFromRes(latData), unit).then(response => response.json()).then(weatherData => {
@@ -66,7 +120,7 @@ function rawDataFromCity(city, res, unit) {
     }
 }
 
-function reportCurrentWeatherFromLocation(location, res, unit) {
+reportCurrentWeatherFromLocation = (location, res, unit) => {
     let weather;
     if (location.split(',')[1] != undefined) {    //This will determine if the location we sent in is a latlng or city
         fetchWeather(location, unit).then(response => response.json()).then(weatherData => {
@@ -103,7 +157,7 @@ function reportCurrentWeatherFromLocation(location, res, unit) {
     }
 }
 
-function reportForecastFromLocation(city, res, unit) {
+reportForecastFromLocation = (city, res, unit) => {
     let report = [];
     fetchLatAndLong(city).then(response => response.json()).then(latData => {
         fetchWeather(getLatAndLngFromRes(latData), unit).then(response => response.json()).then(weatherData => {
@@ -133,7 +187,7 @@ function reportForecastFromLocation(city, res, unit) {
 }
 
 // HELPERS ------------------------ HELPERS \\
-function getLatAndLngFromRes(res) {
+getLatAndLngFromRes = (res) => {
     let latLng;
     res.results.forEach(element => {
         element.locations.forEach(e => {
@@ -144,14 +198,14 @@ function getLatAndLngFromRes(res) {
 }
 
 
-function convertUnixToTime(unix_time) {
+convertUnixToTime = (unix_time) => {
     let date = new Date(unix_time * 1000);
     let hours = date.getHours();
     let minutes = "0" + date.getMinutes();
     return hours + ':' + minutes.substr(-2);
 }
 
-function checkIfUnitExists(req) {
+checkIfUnitExists = (req) => {
     let unit = req.params.unit;
     if (unit == undefined) unit = "none";
     return unit;
